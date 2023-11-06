@@ -49,28 +49,57 @@ AND C.opComp = OC.opComp
 AND C.idJuego = J.idJuego
 AND C.email = U.email
 AND J.categoria = 'Aventura'
-AND (J.so = 'Windows' OR J.so = 'Linux')  
-AND C.metodoPago = 'Débito'
+AND (J.so = 'Windows' OR J.so = 'Linux')
+AND C.metodoPago = 'Debito'
 AND OC.precio = (SELECT MIN(OC2.precio)
-                FROM OpcionCompra OC2 
-                WHERE OC2.idJuego = J.idJuego);
+                FROM OpcionCompra OC2 ,  Juego J2
+                WHERE OC2.idJuego = J2.idJuego
+                AND (J2.so = 'Windows' OR J2.so = 'Linux') 
+                AND J2.categoria = 'Aventura');
 
--- Consulta 5
 
+-- Consulta 5 
 SELECT J.descripcion, C.opComp, J.categoria
-FROM JUEGO J, COMPRA C, OPCIONCOMPRA OC
+FROM JUEGO J, COMPRA C, OPCIONCOMPRA OC, REGALO R
 WHERE OC.idJuego = C.idJuego
 AND C.idJuego = J.idJuego
+AND C.idJuego = R.idJuego
+AND C.opComp = R.opComp
 AND C.opComp = OC.opComp
 AND (C.metodoPago = 'Debito' OR C.metodoPago = 'Credito')
+AND R.fechaHora >= TO_DATE('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+AND R.fechaHora < TO_DATE('2023-03-31 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 MINUS
 SELECT J1.descripcion, OC1.opComp, J1.categoria
-FROM JUEGO J1, COMPRA C1, COMPRA C2, OPCIONCOMPRA OC1
+FROM JUEGO J1, COMPRA C1, COMPRA C2, REGALO R1, REGALO R2, OPCIONCOMPRA OC1
 WHERE OC1.idJuego = C1.idJuego
 AND OC1.idJuego = C2.idJuego
 AND C1.idJuego = J1.idJuego
 AND C2.idJuego = J1.idJuego
 AND C1.opComp = OC1.opComp
 AND C2.opComp = OC1.opComp
+AND OC1.idJuego = R1.idJuego
+AND OC1.opComp = R1.opComp
+AND OC1.idJuego = R2.idJuego
+AND OC1.opComp = R2.opComp
 AND C2.metodoPago = 'Debito'
 AND C1.metodoPago = 'Credito'
+AND R1.fechaHora >= TO_DATE('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+AND R1.fechaHora < TO_DATE('2023-03-31 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+AND R2.fechaHora >= TO_DATE('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+AND R2.fechaHora < TO_DATE('2023-03-31 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+
+-- Consulta 6 (Discriminante por OPCOMPRA?????)
+
+SELECT U.nickname, U.pais, count (J.categoria)
+FROM USUARIO U, REGALO R, JUEGO J, COMPRA C
+WHERE  C.email = R.email
+AND C.idJuego = R.idJuego
+AND C.email = U.email
+AND C.idJuego = J.idJuego
+AND R.opComp = C.opComp
+AND (J.categoria = 'Aventura' OR J.categoria = 'Estrategia')
+GROUP BY U.nickname, U.pais
+HAVING (U.pais = 'Uruguay' OR U.pais = 'Argentina' OR U.pais = 'Brasil')
+
+
