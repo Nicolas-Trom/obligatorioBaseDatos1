@@ -54,3 +54,23 @@ AND C.metodoPago = 'Débito'
 AND OC.precio = (SELECT MIN(OC2.precio)
                 FROM OpcionCompra OC2 
                 WHERE OC2.idJuego = J.idJuego);
+
+-- Consulta 5
+
+SELECT J.descripcion, C.opComp, J.categoria
+FROM JUEGO J, COMPRA C, OPCIONCOMPRA OC
+WHERE OC.idJuego = C.idJuego
+AND C.idJuego = J.idJuego
+AND C.opComp = OC.opComp
+AND (C.metodoPago = 'Debito' OR C.metodoPago = 'Credito')
+MINUS
+SELECT J1.descripcion, OC1.opComp, J1.categoria
+FROM JUEGO J1, COMPRA C1, COMPRA C2, OPCIONCOMPRA OC1
+WHERE OC1.idJuego = C1.idJuego
+AND OC1.idJuego = C2.idJuego
+AND C1.idJuego = J1.idJuego
+AND C2.idJuego = J1.idJuego
+AND C1.opComp = OC1.opComp
+AND C2.opComp = OC1.opComp
+AND C2.metodoPago = 'Debito'
+AND C1.metodoPago = 'Credito'
