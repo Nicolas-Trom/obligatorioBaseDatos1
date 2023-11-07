@@ -91,7 +91,7 @@ AND R2.fechaHora < TO_DATE('2023-03-31 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 
 -- Consulta 6 (Discriminante por OPCOMPRA?????)
 
-SELECT U.nickname, U.pais, count (J.categoria)
+SELECT U.nickname, U.pais, count (J.categoria),C.opComp
 FROM USUARIO U, REGALO R, JUEGO J, COMPRA C
 WHERE  C.email = R.email
 AND C.idJuego = R.idJuego
@@ -99,7 +99,17 @@ AND C.email = U.email
 AND C.idJuego = J.idJuego
 AND R.opComp = C.opComp
 AND (J.categoria = 'Aventura' OR J.categoria = 'Estrategia')
-GROUP BY U.nickname, U.pais
+GROUP BY U.nickname, U.pais,C.opComp
 HAVING (U.pais = 'Uruguay' OR U.pais = 'Argentina' OR U.pais = 'Brasil')
+ORDER BY U.nickname
+
+----7777777777777777777777
+SELECT J.descripcion, U.nickname, Trunc(C.fechaHora,'dd') 
+FROM Juego J, Usuario U, Compra C, OpcionCompra OC   
+WHERE C.idJuego = OC.idJuego     
+AND OC.idJuego = J.idJuego   
+AND C.email = U.email   
+GROUP BY Trunc(C.fechaHora,'dd'), J.descripcion, U.nickname 
+HAVING COUNT(C.fechaHora)>2 
 
 
