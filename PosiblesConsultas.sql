@@ -108,8 +108,27 @@ SELECT J.descripcion, U.nickname, Trunc(C.fechaHora,'dd')
 FROM Juego J, Usuario U, Compra C, OpcionCompra OC   
 WHERE C.idJuego = OC.idJuego     
 AND OC.idJuego = J.idJuego   
-AND C.email = U.email   
+AND C.email = U.email
 GROUP BY Trunc(C.fechaHora,'dd'), J.descripcion, U.nickname 
 HAVING COUNT(C.fechaHora)>2 
+
+-- Conulta 8
+SELECT U.pais, SUM (OC.precio), Trunc(C.fechaHora,'dd') 
+FROM Usuario U, OpcionCompra OC, Compra C 
+WHERE OC.idJuego = C.idJuego 
+AND OC.opComp = C.opComp 
+AND C.email = U.email 
+and OC.precio > (SELECT SUM (OC1.precio)/30 
+                    FROM Usuario U1, OpcionCompra OC1, Compra C1 
+                    WHERE OC1.idJuego = C1.idJuego 
+                    AND OC1.opComp = C1.opComp 
+                    AND C1.email = U1.email 
+                    AND U1.pais = U.pais 
+                    AND Trunc(C1.fechaHora,'mm') = Trunc(C.fechaHora,'mm') 
+                    GROUP BY U1.pais, Trunc(C1.fechaHora,'mm') 
+                ) 
+GROUP BY U.pais, Trunc(C.fechaHora,'dd') 
+ORDER BY U.pais, Trunc(C.fechaHora,'dd')
+
 
 
