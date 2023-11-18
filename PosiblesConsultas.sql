@@ -26,7 +26,7 @@ WHERE U.email IN (
     AND R.fechaHora >= TO_DATE('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
     AND R.fechaHora < TO_DATE('2024-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
     GROUP BY R.email
-    HAVING COUNT(DISTINCT C.metodoPago) = (
+    HAVING COUNT(DISTINCT C.metodoPago) >= (
         SELECT COUNT(*)
         FROM MetodoPago M
         WHERE M.habilitado = 'S'
@@ -130,5 +130,71 @@ and OC.precio > (SELECT SUM (OC1.precio)/30
 GROUP BY U.pais, Trunc(C.fechaHora,'dd') 
 ORDER BY U.pais, Trunc(C.fechaHora,'dd')
 
+-- Consulta 9
+
+SELECT J.idJuego, U.pais, COUNT (*) as total 
+FROM Juego J, Compra C, OpcionCompra OC, Usuario U  
+WHERE C.idJuego= OC.idJuego  
+AND C.opComp = OC.opComp  
+AND C.idJuego = J.idJuego  
+AND C.email = U.email 
+AND C.fechaHora > add_months(sysdate, -3)
+AND C.fechaHora <=  (SYSDATE)
+GROUP BY U.pais, J.idJuego  
+ORDER BY total DESC, U.pais 
+
+-- Pruebas para la 9
+INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)  
+VALUES ('nicolas@gmail',3,'Deluxe',TO_DATE('2023-10-25 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Debito');
+
+INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)  
+VALUES ('agustin@gmail',5,'Deluxe',TO_DATE('2023-11-15 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Credito');
+
+INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)  
+VALUES ('pablo@gmail',1,'Standard',TO_DATE('2023-10-06 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Credito');
 
 
+-- Consulta 10
+
+SELECT U.email, OC.opComp, PorcentajeTabla.PorcentajeRegaldos, PorcentajeTabla.CANTCOMPRADOS, PorcentajeTabla.CANTREGALOS,
+    (CASE 
+        WHEN U.pais IN ('Uruguay', 'Argentina', 'Brasil', 'Paraguay') THEN 'Mercosur' 
+        ELSE U.pais 
+    END) AS Clasificacion 
+FROM Usuario U, OpcionCompra OC, Compra C, (  
+    ( SELECT U.email, OC.opComp, CompraXOPCOMP.cantCjuego CANTCOMPRADOS, RegaloTotalXopComp.cantRjuego, RegaloXusuario.TotalRegalo CANTREGALOS,  
+    ((RegaloXusuario.TotalRegalo/RegaloTotalXopComp.cantRjuego)*100) PorcentajeRegaldos  
+    FROM Usuario U, OpcionCompra OC, Regalo R,  
+      
+      
+   		(SELECT U.email,OC.opComp, COUNT( C.idJuego) cantCjuego  
+    	FROM Compra C, OpcionCompra OC, Usuario U  
+    	WHERE OC.opComp = C.opComp  
+    	AND OC.idJuego = C.idJuego
+    	AND C.email = U.email
+    	GROUP BY OC.opComp,U.email) CompraXOPCOMP,
+    
+    	(SELECT OC.opComp, COUNT (R.idJuego) cantRjuego  
+    	FROM Regalo R, OpcionCompra OC  
+    	WHERE OC.idJuego = R.idJuego  
+    	AND OC.opComp = R.opComp  
+    	GROUP BY OC.opComp) RegaloTotalXopComp, 
+ 
+		(SELECT R.email,R.opComp,COUNT (R.idJuego) TotalRegalo 
+        	FROM Regalo R 
+        	GROUP BY R.email,R.opComp) RegaloXusuario 
+     
+	WHERE CompraXOPCOMP.email = U.email  
+    AND OC.opComp = CompraXOPCOMP.opComp  
+    AND OC.opComp = RegaloTotalXopComp.opComp  
+    AND RegaloXusuario.email = U.email 
+    AND RegaloXusuario.opComp = OC.opComp 
+    GROUP BY U.email,OC.opComp, CompraXOPCOMP.cantCjuego, RegaloTotalXopComp.cantRjuego,RegaloXusuario.TotalRegalo) PorcentajeTabla    
+)  
+WHERE OC.opComp = C.opComp 
+AND OC.idJuego = C.idJuego 
+AND C.email = U.email 
+AND PorcentajeTabla.email = U.email  
+AND PorcentajeTabla.opComp = OC.opComp  
+GROUP BY U.email, OC.opComp,PorcentajeTabla.PorcentajeRegaldos, U.pais,PorcentajeTabla.CANTCOMPRADOS,PorcentajeTabla.CANTREGALOS
+ORDER BY U.email

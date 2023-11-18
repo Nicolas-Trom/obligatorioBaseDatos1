@@ -1,0 +1,65 @@
+--DDL_obli2_BD1
+
+
+DROP TABLE Regalo;
+DROP TABLE Compra;
+DROP TABLE MetodoPago;
+DROP TABLE OpcionCompra;
+DROP TABLE Juego;
+DROP TABLE Usuario;
+
+CREATE TABLE Usuario (
+    email VARCHAR2(255) NOT NULL CONSTRAINT usuario_pk PRIMARY KEY,
+    pais VARCHAR2(255) NOT NULL,
+    nickname VARCHAR2(60) NOT NULL CONSTRAINT usuario_ak UNIQUE,
+    telefono VARCHAR2(20)
+);
+
+CREATE TABLE Juego (
+    idJuego NUMERIC(6) NOT NULL,
+    descripcion VARCHAR2(255) NOT NULL,
+    fecha TIMESTAMP,
+    desarrollador VARCHAR2(255),
+    SO VARCHAR2(50) NOT NULL CHECK (SO IN ('Windows', 'Linux', 'Mac')),
+    categoria VARCHAR2(50) NOT NULL CHECK (categoria IN ('Aventura', 'AcciÃ³n', 'Estrategia', 'Terror')),
+    CONSTRAINT juego_pk PRIMARY KEY (idJuego)
+);
+
+CREATE TABLE OpcionCompra (
+    idJuego NUMERIC(6) NOT NULL,
+    opComp VARCHAR2(10) NOT NULL CHECK(opComp IN ('Deluxe', 'Standard')),
+    precio DECIMAL(10,2) NOT NULL,
+    CONSTRAINT opcionCompra_pk PRIMARY KEY (idJuego, opComp),
+    CONSTRAINT opcionCompra_juego_fk FOREIGN KEY (idJuego) REFERENCES Juego(idJuego)
+);
+
+CREATE TABLE MetodoPago (
+    metodoPago  VARCHAR2(30) NOT NULL CONSTRAINT metodoPago_pk PRIMARY KEY,
+    habilitado CHAR(1) NOT NULL CHECK (habilitado IN ('S', 'N'))
+);
+
+CREATE TABLE Compra (
+    email VARCHAR2(255) NOT NULL,
+    idJuego NUMERIC(6) NOT NULL,
+    opComp VARCHAR2(10) NOT NULL,
+    fechaHora TIMESTAMP NOT NULL,
+    metodoPago  VARCHAR2(30) NOT NULL,
+    CONSTRAINT compra_pk PRIMARY KEY (email, idJuego, opComp, fechaHora),
+    CONSTRAINT compra_usuario_fk FOREIGN KEY (email) REFERENCES Usuario(email),
+    CONSTRAINT compra_opcionCompra_fk FOREIGN KEY (idJuego, opComp) REFERENCES OpcionCompra(idJuego, opComp),
+    CONSTRAINT compra_metodoPago_fk FOREIGN KEY (metodoPago) REFERENCES MetodoPago(metodoPago)
+);
+
+CREATE TABLE Regalo (
+    email VARCHAR2(255)NOT NULL,
+    idJuego NUMERIC(6) NOT NULL,
+    opComp VARCHAR2(10) NOT NULL,
+    fechaHora TIMESTAMP NOT NULL,
+    emailDestinatario VARCHAR2(255) NOT NULL,
+    CONSTRAINT regalo_pk PRIMARY KEY (email,idJuego,opComp,fechaHora,emailDestinatario),
+    CONSTRAINT email_regalo_fk FOREIGN KEY (email) REFERENCES Usuario(email),
+    CONSTRAINT emailDestinatario_regalo_fk FOREIGN KEY (emailDestinatario) REFERENCES Usuario(email),
+    CONSTRAINT compra_regalo_fk FOREIGN KEY (email,idJuego,opComp,fechaHora) REFERENCES Compra (email,idJuego,opComp,fechaHora)
+);
+
+
