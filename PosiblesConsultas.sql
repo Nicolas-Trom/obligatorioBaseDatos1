@@ -26,7 +26,7 @@ WHERE U.email IN (
     AND R.fechaHora >= TO_DATE('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
     AND R.fechaHora < TO_DATE('2024-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
     GROUP BY R.email
-    HAVING COUNT(DISTINCT C.metodoPago) >= (
+    HAVING COUNT(DISTINCT C.metodoPago) = (
         SELECT COUNT(*)
         FROM MetodoPago M
         WHERE M.habilitado = 'S'
@@ -103,7 +103,7 @@ GROUP BY U.nickname, U.pais,C.opComp
 HAVING (U.pais = 'Uruguay' OR U.pais = 'Argentina' OR U.pais = 'Brasil')
 ORDER BY U.nickname
 
-----7777777777777777777777
+-- Conulta 7
 SELECT J.descripcion, U.nickname, Trunc(C.fechaHora,'dd') 
 FROM Juego J, Usuario U, Compra C, OpcionCompra OC   
 WHERE C.idJuego = OC.idJuego     
@@ -113,7 +113,7 @@ GROUP BY Trunc(C.fechaHora,'dd'), J.descripcion, U.nickname
 HAVING COUNT(C.fechaHora)>2 
 
 -- Conulta 8
-SELECT U.pais, SUM (OC.precio), Trunc(C.fechaHora,'dd') 
+SELECT U.pais, SUM (OC.precio), Trunc(C.fechaHora,'mm') 
 FROM Usuario U, OpcionCompra OC, Compra C 
 WHERE OC.idJuego = C.idJuego 
 AND OC.opComp = C.opComp 
@@ -127,8 +127,8 @@ and OC.precio > (SELECT SUM (OC1.precio)/30
                     AND Trunc(C1.fechaHora,'mm') = Trunc(C.fechaHora,'mm') 
                     GROUP BY U1.pais, Trunc(C1.fechaHora,'mm') 
                 ) 
-GROUP BY U.pais, Trunc(C.fechaHora,'dd') 
-ORDER BY U.pais, Trunc(C.fechaHora,'dd')
+GROUP BY U.pais, Trunc(C.fechaHora,'mm') 
+ORDER BY U.pais, Trunc(C.fechaHora,'mm')
 
 -- Consulta 9
 
@@ -143,15 +143,7 @@ AND C.fechaHora <=  (SYSDATE)
 GROUP BY U.pais, J.idJuego  
 ORDER BY total DESC, U.pais 
 
--- Pruebas para la 9
-INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)  
-VALUES ('nicolas@gmail',3,'Deluxe',TO_DATE('2023-10-25 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Debito');
 
-INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)  
-VALUES ('agustin@gmail',5,'Deluxe',TO_DATE('2023-11-15 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Credito');
-
-INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)  
-VALUES ('pablo@gmail',1,'Standard',TO_DATE('2023-10-06 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Credito');
 
 
 -- Consulta 10

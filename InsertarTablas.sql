@@ -150,8 +150,8 @@ INSERT INTO  Regalo (email,idJuego,opComp,fechaHora,emailDestinatario)
 VALUES ('agustin@gmail',4,'Deluxe',TO_DATE('2023-02-28 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'nicolas@gmail');
 
 -- Para Probar consulta 1
-INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)  
-VALUES ('carlos@gmail',1,'Standard',TO_DATE('2023-01-15 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Debito');
+INSERT INTO  Compra (email,idJuego,opComp,fechaHora,metodoPago)
+VALUES ('agustin@gmail',1,'Standard',TO_DATE('2023-01-10 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Debito');
 
 
 
